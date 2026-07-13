@@ -938,6 +938,19 @@ select.input {
   .menu-btn {
     display: inline-flex;
   }
+  .hero {
+    padding: 52px 0 56px;
+  }
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 22px 30px;
+    padding-top: 22px;
+  }
+  .hero-stats .hstat {
+    padding-right: 0;
+    margin-right: 0;
+    border-right: none;
+  }
   .section {
     padding: 52px 0;
   }
