@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { site } from "../data/site";
 import { usePlaylists } from "../context/PlaylistsProvider";
@@ -48,7 +48,16 @@ const guidelines = [
 
 export default function Submit() {
   const { playlists } = usePlaylists();
-  const [form, setForm] = useState<FormState>(initialForm);
+  const [searchParams] = useSearchParams();
+
+  // Preselect the target playlist when arriving from a playlist's page.
+  const [form, setForm] = useState<FormState>(() => {
+    const requested = searchParams.get("playlist") ?? "";
+    const preselected = playlists.some((p) => p.title === requested)
+      ? requested
+      : "";
+    return { ...initialForm, playlist: preselected };
+  });
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success">(
     "idle"

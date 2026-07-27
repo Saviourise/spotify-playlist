@@ -148,7 +148,10 @@ export default function PlaylistDetail() {
               </p>
             </div>
             <div className="cp-actions">
-              <Link to="/submit" className="btn btn-primary">
+              <Link
+                to={`/submit?playlist=${encodeURIComponent(playlist.title)}`}
+                className="btn btn-primary"
+              >
                 Submit your song
                 <Icon name="chevron-right" />
               </Link>
