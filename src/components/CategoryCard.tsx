@@ -4,14 +4,14 @@ import type { Category } from "../data/types";
 
 interface CategoryCardProps {
   category: Category;
-  count: number;
+  caption: string;
   cover: string;
   color: string;
 }
 
 export function CategoryCard({
   category,
-  count,
+  caption,
   cover,
   color,
 }: CategoryCardProps) {
@@ -24,7 +24,7 @@ export function CategoryCard({
     >
       <img src={cover} alt="" loading="lazy" />
       <div className="cat-card-body">
-        <span className="cc-count num">{count} playlists</span>
+        <span className="cc-count">{caption}</span>
         <div>
           <h3>{category}</h3>
           <span className="cc-go">

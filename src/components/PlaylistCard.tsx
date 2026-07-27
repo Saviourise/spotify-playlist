@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Playlist } from "../data/types";
 import { Cover } from "./Cover";
-import { Icon } from "./Icon";
 import { formatCompact, formatDuration } from "../utils/format";
 
 interface PlaylistCardProps {
@@ -29,21 +28,22 @@ export function PlaylistCard({ playlist, index }: PlaylistCardProps) {
       <div className="card-meta">
         <span className="mgenre">{genre}</span>
         <span className="mdot" />
-        <span>{playlist.songs} songs</span>
-        <span className="mdot" />
-        <span>{formatDuration(playlist.durationMinutes)}</span>
+        <span className="num">{formatCompact(playlist.saves)} saves</span>
+        {playlist.songs > 0 ? (
+          <>
+            <span className="mdot" />
+            <span>{playlist.songs} songs</span>
+          </>
+        ) : null}
       </div>
-      <p className="card-summary">{playlist.summary}</p>
-      <div className="card-foot">
-        <span className="cf-stat num">
-          <Icon name="play" />
-          {formatCompact(playlist.plays)} plays
-        </span>
-        <span className="cf-stat num">
-          <Icon name="chart" />
-          {formatCompact(playlist.streams)} streams
-        </span>
-      </div>
+      <p className="card-summary">{playlist.blurb}</p>
+      {playlist.durationMinutes > 0 ? (
+        <div className="card-foot">
+          <span className="cf-stat num">
+            {formatDuration(playlist.durationMinutes)}
+          </span>
+        </div>
+      ) : null}
     </Link>
   );
 }

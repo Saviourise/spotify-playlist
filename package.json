@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "auth": "node --env-file=.env scripts/spotify-auth.mjs",
+    "snapshot": "node --env-file=.env scripts/fetch-snapshot.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

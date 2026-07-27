@@ -1,25 +1,24 @@
 import { SectionHead } from "../components/SectionHead";
 import { Icon, type IconName } from "../components/Icon";
-import { site } from "../data/site";
+import { site, whatsappUrl } from "../data/site";
 
-const aboutImage =
-  "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=900&h=1100&q=80";
+const aboutImage = "/eseosa-gnf.jpg";
 
 const values = [
   {
     icon: "headphones" as const,
     title: "Curated with care",
-    body: "Every playlist is built and maintained by hand, not by an algorithm. Each one has a clear point of view.",
+    body: "Every gospel playlist is built and maintained by hand, not by an algorithm. Each one has a clear point of view.",
   },
   {
     icon: "search" as const,
     title: "Built for discovery",
-    body: "Mood, genre and activity tags plus full search make it easy to land on exactly the right sound.",
+    body: "Genre tags and full search make it easy to land on exactly the right playlist for the moment.",
   },
   {
     icon: "trending" as const,
     title: "Always fresh",
-    body: "New tracks are added and tired ones are retired every week, so the sound never goes stale.",
+    body: "New songs are added and tired ones retired every week, with saves updating live from Spotify.",
   },
 ];
 
@@ -37,22 +36,21 @@ export default function About() {
       <section className="section">
         <div className="container about-hero">
           <div className="about-copy">
-            <span className="eyebrow accent">About the hub</span>
-            <h1 className="display">We help music find its moment</h1>
+            <span className="eyebrow accent">About {site.name}</span>
+            <h1 className="display">Curating the sound of gospel</h1>
             <p>
-              Playlist Hub is a curated home for Spotify playlists sorted by
-              mood, genre and activity. Instead of digging through endless
-              search results, you pick a feeling and press play.
+              {site.name} is a curated home for gospel playlists on Spotify,
+              sorted by genre. Instead of digging through endless search
+              results, you pick a vibe and press play.
             </p>
             <p>
-              What started as a personal collection has grown into a catalogue
-              followed by listeners around the world. Every playlist is built to
-              soundtrack a real moment, from a focused work session to a full
-              dance floor.
+              It is also a home for artists. Find the playlist your song belongs
+              on, claim an open spot, and reach listeners who are already
+              worshipping to this sound.
             </p>
           </div>
           <div className="about-img">
-            <img src={aboutImage} alt="A music studio" />
+            <img src={aboutImage} alt={`${site.name}`} />
           </div>
         </div>
       </section>
@@ -82,7 +80,7 @@ export default function About() {
           <SectionHead
             eyebrow="Get in touch"
             title="Submissions and collaborations welcome"
-            desc="Have a track you think fits, or want to work together? Reach out through any of the channels below."
+            desc="Have a song you think fits, or want to work together? Reach out through any of the channels below."
           />
 
           <div className="contact-cards" style={{ marginBottom: 24 }}>
@@ -95,11 +93,11 @@ export default function About() {
             </div>
             <div className="contact-card">
               <div className="cc-ico">
-                <Icon name="phone" />
+                <Icon name="whatsapp" />
               </div>
-              <div className="cc-label">Phone</div>
-              <a href={`tel:${site.contact.phone.replace(/\s+/g, "")}`}>
-                {site.contact.phone}
+              <div className="cc-label">WhatsApp</div>
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                {site.contact.whatsapp}
               </a>
             </div>
             <div className="contact-card">

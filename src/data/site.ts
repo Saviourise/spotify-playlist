@@ -1,5 +1,4 @@
 // Central place for hub identity, contact and social details.
-// Replace the placeholder values below with real details before launch.
 
 export interface SocialLink {
   label: string;
@@ -15,7 +14,8 @@ export interface SiteConfig {
   heroSubheading: string;
   contact: {
     email: string;
-    phone: string;
+    /** Display form of the WhatsApp number, e.g. "+234 800 000 0000". */
+    whatsapp: string;
     location: string;
   };
   spotifyProfile: string;
@@ -23,30 +23,34 @@ export interface SiteConfig {
 }
 
 export const site: SiteConfig = {
-  name: "Playlist Hub",
-  tagline: "Curated Spotify playlists for every mood, moment and lifestyle.",
-  heroHeadingLead: "Find the Perfect Playlist",
-  heroHeadingRest: "for Every Moment",
+  name: "Eseosa GNF",
+  tagline: "Editorial and curated Spotify gospel playlists.",
+  heroHeadingLead: "There's a Playlist",
+  heroHeadingRest: "for You",
   heroSubheading:
-    "Discover carefully curated Spotify playlists based on your mood, favourite genre or daily activity.",
+    "Discover carefully curated gospel playlists, sorted by genre.",
   contact: {
-    email: "hello@playlisthub.example",
-    phone: "+1 (555) 010 2030",
+    email: "eseosagnf@gmail.com",
+    whatsapp: "+234 810 921 9718",
     location: "Available worldwide",
   },
-  spotifyProfile: "https://open.spotify.com/user/playlisthub",
+  spotifyProfile:
+    "https://open.spotify.com/user/31j4k57fg6oqt24vinrkvieeagiu",
   social: [
     {
       label: "Instagram",
-      url: "https://instagram.com/playlisthub",
+      url: "https://instagram.com/eseosa_gnf",
       icon: "instagram",
     },
-    { label: "X", url: "https://x.com/playlisthub", icon: "twitter" },
-    { label: "TikTok", url: "https://tiktok.com/@playlisthub", icon: "tiktok" },
+    { label: "X", url: "https://x.com/eseosa_gnf", icon: "twitter" },
     {
       label: "Spotify",
-      url: "https://open.spotify.com/user/playlisthub",
+      url: "https://open.spotify.com/user/31j4k57fg6oqt24vinrkvieeagiu",
       icon: "spotify",
     },
   ],
 };
+
+/** Digits only, for wa.me and tel links. */
+export const whatsappDigits = site.contact.whatsapp.replace(/[^\d]/g, "");
+export const whatsappUrl = `https://wa.me/${whatsappDigits}`;

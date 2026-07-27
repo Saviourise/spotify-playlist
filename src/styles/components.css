@@ -1,6 +1,47 @@
 /* ==========================================================================
-   Playlist Hub - components
+   Eseosa GNF - components
    ========================================================================== */
+
+/* -------------------------- WhatsApp button ----------------------------- */
+
+.wa-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 40;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #25d366;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  transition: transform 0.18s var(--ease), background-color 0.18s var(--ease);
+}
+
+.wa-fab:hover {
+  transform: translateY(-2px) scale(1.05);
+  background-color: #2ee06f;
+}
+
+.wa-fab svg {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 680px) {
+  .wa-fab {
+    right: 16px;
+    bottom: 16px;
+    width: 52px;
+    height: 52px;
+  }
+  .wa-fab svg {
+    width: 28px;
+    height: 28px;
+  }
+}
 
 /* ------------------------------ Header ---------------------------------- */
 
@@ -33,19 +74,18 @@
 }
 
 .brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background-color: var(--accent);
-  color: var(--accent-ink);
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--line-2);
 }
 
-.brand-mark svg {
-  width: 19px;
-  height: 19px;
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .nav {
@@ -374,6 +414,20 @@
   pointer-events: none;
 }
 
+/* Shown when a cover image is missing or fails to load. */
+.cover-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.cover-fallback svg {
+  width: 32%;
+  height: 32%;
+}
+
 .cover-face {
   position: absolute;
   inset: 0;
@@ -461,6 +515,10 @@
   letter-spacing: -0.02em;
   margin-bottom: 7px;
   transition: color 0.18s var(--ease);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card:hover .card-title {

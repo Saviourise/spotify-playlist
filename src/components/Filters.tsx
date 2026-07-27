@@ -1,59 +1,15 @@
 import { Icon } from "./Icon";
-import {
-  MOODS,
-  GENRES,
-  ACTIVITIES,
-  type FilterGroup,
-  type Mood,
-  type Genre,
-  type Activity,
-} from "../data/types";
+import { GENRES, type Genre } from "../data/types";
 
 export interface FilterState {
-  moods: Mood[];
   genres: Genre[];
-  activities: Activity[];
 }
 
 interface FiltersProps {
   selected: FilterState;
-  onToggle: (group: FilterGroup, value: string) => void;
+  onToggle: (value: Genre) => void;
   onClear: () => void;
   resultCount: number;
-}
-
-interface ChipGroupProps {
-  label: string;
-  options: readonly string[];
-  active: readonly string[];
-  onToggle: (value: string) => void;
-}
-
-function ChipGroup({ label, options, active, onToggle }: ChipGroupProps) {
-  return (
-    <div className="fgroup">
-      <div className="fgroup-label">{label}</div>
-      <div className="chips">
-        {options.map((option) => {
-          const on = active.includes(option);
-          return (
-            <button
-              key={option}
-              type="button"
-              className={on ? "chip on" : "chip"}
-              aria-pressed={on}
-              onClick={() => onToggle(option)}
-            >
-              <span className="chip-ic" aria-hidden="true">
-                <Icon name={on ? "check" : "plus"} />
-              </span>
-              {option}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 export function Filters({
@@ -62,30 +18,33 @@ export function Filters({
   onClear,
   resultCount,
 }: FiltersProps) {
-  const activeCount =
-    selected.moods.length + selected.genres.length + selected.activities.length;
+  const activeCount = selected.genres.length;
 
   return (
     <div className="filters">
       <div className="filters-panel">
-        <ChipGroup
-          label="Mood"
-          options={MOODS}
-          active={selected.moods}
-          onToggle={(value) => onToggle("Mood", value)}
-        />
-        <ChipGroup
-          label="Genre"
-          options={GENRES}
-          active={selected.genres}
-          onToggle={(value) => onToggle("Genre", value)}
-        />
-        <ChipGroup
-          label="Activity"
-          options={ACTIVITIES}
-          active={selected.activities}
-          onToggle={(value) => onToggle("Activity", value)}
-        />
+        <div className="fgroup">
+          <div className="fgroup-label">Genre</div>
+          <div className="chips">
+            {GENRES.map((genre) => {
+              const on = selected.genres.includes(genre);
+              return (
+                <button
+                  key={genre}
+                  type="button"
+                  className={on ? "chip on" : "chip"}
+                  aria-pressed={on}
+                  onClick={() => onToggle(genre)}
+                >
+                  <span className="chip-ic" aria-hidden="true">
+                    <Icon name={on ? "check" : "plus"} />
+                  </span>
+                  {genre}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="filters-bar">

@@ -1,28 +1,12 @@
-// Core domain types for the Playlist Hub.
+// Core domain types for the Eseosa GNF playlist hub.
 
-export type Mood =
-  | "Happy"
-  | "Sad"
-  | "Romantic"
-  | "Chill"
-  | "Motivational"
-  | "Peaceful";
-
-export type Activity =
-  | "Workout"
-  | "Studying"
-  | "Sleeping"
-  | "Driving"
-  | "Cooking"
-  | "Reading"
-  | "Gaming"
-  | "Party";
-
+// Genre order matters: Gospel, Afro-gospel and Afrobeat lead, the rest follow.
 export type Genre =
-  | "Afrobeats"
+  | "Gospel"
+  | "Afro-gospel"
+  | "Afrobeat"
   | "Hip-Hop"
   | "R&B"
-  | "Gospel"
   | "Pop"
   | "Amapiano"
   | "Dancehall"
@@ -31,75 +15,40 @@ export type Genre =
   | "Country"
   | "Alternative";
 
-export type Category =
-  | "Trending"
-  | "Recently Added"
-  | "Most Popular"
-  | "Staff Picks";
-
-// The three filter groups shown to visitors.
-export type FilterGroup = "Mood" | "Genre" | "Activity";
+// Categories are derived from saves, not stored per playlist.
+export type Category = "Trending" | "Most Popular" | "Recently Added";
 
 export interface Playlist {
-  /** URL friendly identifier used in the detail route. */
+  /** URL friendly identifier (the Spotify playlist id). */
   id: string;
   title: string;
-  /** Short one line summary shown on cards. */
-  summary: string;
-  /** Longer description shown on the detail page. */
-  description: string;
-  moods: Mood[];
-  genres: Genre[];
-  activities: Activity[];
-  categories: Category[];
+  /** External Spotify playlist link. */
+  spotifyUrl: string;
+  /** Real cover art (Spotify image url, or a placeholder before creds are set). */
+  cover: string;
+  /** Solid fallback colour shown while the cover loads (no gradients used). */
+  coverColor: string;
+  /** Saves / followers on Spotify. */
+  saves: number;
   /** Number of tracks in the playlist. */
   songs: number;
   /** Total listening time in minutes. */
   durationMinutes: number;
-  /** Saves / followers on Spotify. */
-  followers: number;
-  /** Lifetime streams across the playlist. */
-  streams: number;
-  /** Total number of plays recorded. */
-  plays: number;
-  /** Projected streams for the next 30 days. */
-  estimatedMonthlyStreams: number;
-  /** Real cover photograph. */
-  cover: string;
-  /** Solid fallback colour shown while the cover loads (no gradients used). */
-  coverColor: string;
-  /** External Spotify playlist link. */
-  spotifyUrl: string;
-  /** ISO date the playlist was added to the hub. */
-  addedOn: string;
+  /** A few of the artists featured in the playlist. */
+  artists: string[];
+  /** Genre tags (owner assigned via overrides). */
+  genres: Genre[];
+  /** Short one line summary shown on cards and the detail page. */
+  blurb: string;
   featured?: boolean;
 }
 
-export const MOODS: Mood[] = [
-  "Happy",
-  "Sad",
-  "Romantic",
-  "Chill",
-  "Motivational",
-  "Peaceful",
-];
-
-export const ACTIVITIES: Activity[] = [
-  "Workout",
-  "Studying",
-  "Sleeping",
-  "Driving",
-  "Cooking",
-  "Reading",
-  "Gaming",
-  "Party",
-];
-
 export const GENRES: Genre[] = [
-  "Afrobeats",
+  "Gospel",
+  "Afro-gospel",
+  "Afrobeat",
   "Hip-Hop",
   "R&B",
-  "Gospel",
   "Pop",
   "Amapiano",
   "Dancehall",
@@ -111,7 +60,6 @@ export const GENRES: Genre[] = [
 
 export const CATEGORIES: Category[] = [
   "Trending",
-  "Recently Added",
   "Most Popular",
-  "Staff Picks",
+  "Recently Added",
 ];

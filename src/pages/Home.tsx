@@ -4,45 +4,67 @@ import { SectionHead } from "../components/SectionHead";
 import { PlaylistCard } from "../components/PlaylistCard";
 import { CategoryCard } from "../components/CategoryCard";
 import { Icon } from "../components/Icon";
-import { playlists, getByCategory } from "../data/playlists";
-import { CATEGORIES } from "../data/types";
+import { usePlaylists } from "../context/PlaylistsProvider";
+import { topBySaves, bottomBySaves } from "../data/playlists";
 import { formatCompact } from "../utils/format";
-
-const trending = getByCategory("Trending").slice(0, 4);
-const fresh = [...playlists]
-  .sort((a, b) => (a.addedOn < b.addedOn ? 1 : -1))
-  .slice(0, 4);
-
-const totalStreams = playlists.reduce((s, p) => s + p.streams, 0);
-const totalPlays = playlists.reduce((s, p) => s + p.plays, 0);
-const totalFollowers = playlists.reduce((s, p) => s + p.followers, 0);
-
-const bandStats = [
-  { num: playlists.length, label: "Curated playlists" },
-  { num: formatCompact(totalStreams), label: "Lifetime streams" },
-  { num: formatCompact(totalPlays), label: "Total plays" },
-  { num: formatCompact(totalFollowers), label: "Followers reached" },
-];
 
 const steps = [
   {
-    icon: "headphones" as const,
-    title: "Pick your vibe",
-    body: "Choose a mood, a genre or an activity. Every playlist is tagged so you land on the right sound fast.",
+    icon: "search" as const,
+    title: "Find the playlist that fits",
+    body: "Browse by genre and vibe to find the gospel playlist your song belongs on.",
   },
   {
     icon: "list" as const,
-    title: "See the details",
-    body: "Open any playlist to view song count, listening time, streams, plays and estimated reach at a glance.",
+    title: "Pick an open spot",
+    body: "Choose an available spot (3 to 20) in the playlist you want your track placed in.",
   },
   {
     icon: "spotify" as const,
-    title: "Play on Spotify",
-    body: "One tap takes you straight to the playlist on Spotify so you can hit play and follow along.",
+    title: "Submit and get placed",
+    body: "Send your Spotify link. If it fits the sound, your song goes live on the playlist.",
   },
 ];
 
 export default function Home() {
+  const { playlists } = usePlaylists();
+  const trending = topBySaves(playlists, 4);
+  const fresh = bottomBySaves(playlists, 4);
+  const topByPop = topBySaves(playlists, 2);
+  const lowest = bottomBySaves(playlists, 1);
+
+  const totalSaves = playlists.reduce((s, p) => s + p.saves, 0);
+  const maxSaves = playlists.reduce((m, p) => Math.max(m, p.saves), 0);
+  const genreCount = new Set(playlists.flatMap((p) => p.genres)).size;
+
+  const bandStats = [
+    { num: playlists.length, label: "Gospel playlists" },
+    { num: formatCompact(totalSaves), label: "Total saves" },
+    { num: formatCompact(maxSaves), label: "Biggest playlist" },
+    { num: genreCount, label: "Genres" },
+  ];
+
+  const categoryCards = [
+    {
+      category: "Trending" as const,
+      caption: "Hottest right now",
+      cover: topByPop[0]?.cover ?? "",
+      color: topByPop[0]?.coverColor ?? "#171310",
+    },
+    {
+      category: "Most Popular" as const,
+      caption: "All time favourites",
+      cover: topByPop[1]?.cover ?? topByPop[0]?.cover ?? "",
+      color: topByPop[1]?.coverColor ?? "#171310",
+    },
+    {
+      category: "Recently Added" as const,
+      caption: "Freshly added",
+      cover: lowest[0]?.cover ?? "",
+      color: lowest[0]?.coverColor ?? "#171310",
+    },
+  ];
+
   return (
     <>
       <Hero />
@@ -51,8 +73,8 @@ export default function Home() {
         <div className="container">
           <SectionHead
             eyebrow="01 / Trending"
-            title="What is hot right now"
-            desc="The playlists getting the most love this week across every mood and genre."
+            title="Gospel heat right now"
+            desc="The playlists getting the most love this week, ranked by saves."
             action={{ label: "Browse all", to: "/browse" }}
           />
           <div className="strip">
@@ -79,23 +101,19 @@ export default function Home() {
           <SectionHead
             eyebrow="02 / Collections"
             title="Browse by category"
-            desc="Jump straight into a hand built collection built around a moment or a mood."
-            action={{ label: "All categories", to: "/categories" }}
+            desc="Jump straight into the sound you are after, sorted the way you like."
+            action={{ label: "All playlists", to: "/browse" }}
           />
           <div className="cat-grid">
-            {CATEGORIES.map((cat) => {
-              const list = getByCategory(cat);
-              const rep = list[0] ?? playlists[0];
-              return (
-                <CategoryCard
-                  key={cat}
-                  category={cat}
-                  count={list.length}
-                  cover={rep.cover}
-                  color={rep.coverColor}
-                />
-              );
-            })}
+            {categoryCards.map((c) => (
+              <CategoryCard
+                key={c.category}
+                category={c.category}
+                caption={c.caption}
+                cover={c.cover}
+                color={c.color}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -105,7 +123,7 @@ export default function Home() {
           <SectionHead
             eyebrow="03 / Fresh"
             title="Recently added"
-            desc="New drops added to the hub, updated as the catalogue grows."
+            desc="New drops added to the collection, updated as it grows."
             action={{ label: "Browse all", to: "/browse" }}
           />
           <div className="strip">
@@ -119,13 +137,15 @@ export default function Home() {
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
           <SectionHead
-            eyebrow="04 / How it works"
-            title="From a feeling to a playlist in seconds"
+            eyebrow="04 / For artists"
+            title="Get your song on a gospel playlist"
           />
           <div className="steps">
             {steps.map((s, i) => (
               <div className="step" key={s.title}>
-                <div className="step-ix num">{String(i + 1).padStart(2, "0")}</div>
+                <div className="step-ix num">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
                 <div className="step-ico">
                   <Icon name={s.icon} />
                 </div>
@@ -141,14 +161,14 @@ export default function Home() {
         <div className="container">
           <div className="cta">
             <div>
-              <h2>Ready to find your next favourite playlist?</h2>
+              <h2>Ready to find the playlist for your song?</h2>
               <p>
-                Explore the full catalogue and filter by mood, genre or activity
-                to find the perfect soundtrack for any moment.
+                Explore the full collection, filter by genre, and claim an open
+                spot on the gospel playlist that fits your sound.
               </p>
             </div>
-            <Link to="/browse" className="btn btn-primary btn-lg">
-              Start browsing
+            <Link to="/submit" className="btn btn-primary btn-lg">
+              Submit your song
               <Icon name="chevron-right" />
             </Link>
           </div>

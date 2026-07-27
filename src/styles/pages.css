@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Playlist Hub - pages
+   Eseosa GNF - pages
    ========================================================================== */
 
 /* --------------------------- Interior header ---------------------------- */
@@ -230,7 +230,7 @@
 /* Stat line */
 .statline {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   overflow: hidden;
@@ -869,15 +869,6 @@ select.input {
   .cat-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-  .statline {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .statline .st:nth-child(3) {
-    border-right: none;
-  }
-  .statline .st:nth-child(-n + 3) {
-    border-bottom: 1px solid var(--line);
-  }
 }
 
 @media (max-width: 900px) {
@@ -964,16 +955,14 @@ select.input {
     display: none;
   }
   .statline {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
   .statline .st {
-    border-right: 1px solid var(--line);
-  }
-  .statline .st:nth-child(2n) {
     border-right: none;
-  }
-  .statline .st:not(:nth-last-child(-n + 2)) {
     border-bottom: 1px solid var(--line);
+  }
+  .statline .st:last-child {
+    border-bottom: none;
   }
   .band-grid {
     grid-template-columns: repeat(2, 1fr);

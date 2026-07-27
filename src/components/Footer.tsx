@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Icon, type IconName } from "./Icon";
-import { site } from "../data/site";
+import { site, whatsappUrl } from "../data/site";
 
 const socialIcon: Record<string, IconName> = {
   instagram: "instagram",
@@ -20,7 +20,7 @@ export function Footer() {
           <div className="footer-col brand-col">
             <Link to="/" className="brand">
               <span className="brand-mark">
-                <Icon name="logo" />
+                <img src="/eseosa-icon.jpg" alt="" />
               </span>
               {site.name}
             </Link>
@@ -71,7 +71,7 @@ export function Footer() {
                 <Link to="/browse?category=Most+Popular">Most Popular</Link>
               </li>
               <li>
-                <Link to="/browse?category=Staff+Picks">Staff Picks</Link>
+                <Link to="/browse?category=Recently+Added">Recently Added</Link>
               </li>
               <li>
                 <a
@@ -93,9 +93,9 @@ export function Footer() {
                 <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
               </li>
               <li>
-                <Icon name="phone" />
-                <a href={`tel:${site.contact.phone.replace(/\s+/g, "")}`}>
-                  {site.contact.phone}
+                <Icon name="whatsapp" />
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  {site.contact.whatsapp}
                 </a>
               </li>
               <li>

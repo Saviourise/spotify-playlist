@@ -1,276 +1,164 @@
-import type { Playlist } from "./types";
+import snapshot from "./playlists.snapshot.json";
+import { overrides, DEFAULT_COVER_COLOR } from "./overrides";
+import type { Playlist, Category } from "./types";
 
-// Real cover photography (Unsplash). Square crop, optimised for the web.
-function img(id: string): string {
-  return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&h=800&q=80`;
+// Raw shape returned by the Spotify function and stored in the snapshot.
+export interface PlaylistRaw {
+  id: string;
+  title: string;
+  spotifyUrl: string;
+  cover: string;
+  description: string;
+  saves: number;
+  songs: number;
+  durationMinutes: number;
+  artists: string[];
 }
 
-// Sample catalogue for the hub. Swap these entries for real playlists and
-// live Spotify links when the hub goes into production.
-export const playlists: Playlist[] = [
+// Generate a clean, human blurb from a playlist's title and genre. The owner's
+// Spotify descriptions are keyword stuffed for search, so we do not use them.
+// This is deterministic (same title -> same blurb) and picks a varied line, so
+// any new or changed playlist automatically gets a fitting description.
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+const BLURB_BUCKETS: { test: RegExp; lines: string[] }[] = [
   {
-    id: "afrobeats-heat",
-    title: "Afrobeats Heat",
-    summary: "The hottest Afrobeats records moving the culture right now.",
-    description:
-      "A rolling selection of the biggest Afrobeats singles and album cuts. Updated every week so you always have the freshest sound from Lagos to London in one place. Perfect for pre-game, the gym, or a long drive with the windows down.",
-    moods: ["Happy", "Motivational"],
-    genres: ["Afrobeats", "Pop"],
-    activities: ["Party", "Workout", "Driving"],
-    categories: ["Trending", "Most Popular"],
-    songs: 82,
-    durationMinutes: 296,
-    followers: 48200,
-    streams: 3120000,
-    plays: 4560000,
-    estimatedMonthlyStreams: 512000,
-    cover: img("photo-1470229722913-7c0e2dbbafd3"),
-    coverColor: "#5a2c17",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWafro001",
-    addedOn: "2026-06-28",
-    featured: true,
+    test: /prophetic|secret place|deep call|glory/i,
+    lines: [
+      "Prophetic worship and declarations for the secret place.",
+      "Deep prophetic sounds for prayer, travail and quiet surrender.",
+    ],
   },
   {
-    id: "amapiano-nights",
-    title: "Amapiano Nights",
-    summary: "Log drum grooves and late night piano for the dance floor.",
-    description:
-      "Deep, hypnotic Amapiano built for the after hours. Rolling basslines, airy pianos and vocal chops that keep the room moving until sunrise. A go to for house parties and long sessions.",
-    moods: ["Chill", "Happy"],
-    genres: ["Amapiano", "Afrobeats"],
-    activities: ["Party", "Driving"],
-    categories: ["Trending", "Staff Picks"],
-    songs: 64,
-    durationMinutes: 274,
-    followers: 31700,
-    streams: 1980000,
-    plays: 2740000,
-    estimatedMonthlyStreams: 361000,
-    cover: img("photo-1470225620780-dba8ba36b745"),
-    coverColor: "#241633",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWpiano02",
-    addedOn: "2026-07-02",
+    test: /chant|spontaneous|soak|intercession|travail|tongues/i,
+    lines: [
+      "Spontaneous chants and soaking sounds to carry you into His presence.",
+      "Free flowing worship chants for long, unhurried moments of prayer.",
+    ],
   },
   {
-    id: "focus-flow",
-    title: "Focus Flow",
-    summary: "Calm instrumentals to help you study and stay locked in.",
-    description:
-      "Low key instrumentals, lo-fi beats and soft keys engineered for deep work. No lyrics to pull your attention away, just a steady backdrop for studying, coding or reading.",
-    moods: ["Peaceful", "Chill"],
-    genres: ["Jazz", "Alternative"],
-    activities: ["Studying", "Reading"],
-    categories: ["Most Popular", "Staff Picks"],
-    songs: 120,
-    durationMinutes: 421,
-    followers: 76400,
-    streams: 5240000,
-    plays: 6810000,
-    estimatedMonthlyStreams: 604000,
-    cover: img("photo-1507838153414-b4b713384a76"),
-    coverColor: "#2b2926",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWfocus03",
-    addedOn: "2026-05-14",
+    test: /worship|adoration|holy|presence|throne|surrender|shield|favour/i,
+    lines: [
+      "Deep, unhurried worship to still your heart and lift your eyes.",
+      "Reverent worship and adoration for time alone with God.",
+    ],
   },
   {
-    id: "gym-power-hour",
-    title: "Gym Power Hour",
-    summary: "High energy anthems to push through every set.",
-    description:
-      "Hard hitting Hip-Hop and pop bangers picked to keep your heart rate up. Sequenced to carry you from warm up to your final rep without a single dead moment.",
-    moods: ["Motivational", "Happy"],
-    genres: ["Hip-Hop", "Pop"],
-    activities: ["Workout"],
-    categories: ["Trending", "Most Popular"],
-    songs: 58,
-    durationMinutes: 201,
-    followers: 42900,
-    streams: 2870000,
-    plays: 3990000,
-    estimatedMonthlyStreams: 448000,
-    cover: img("photo-1534438327276-14e5300c3a48"),
-    coverColor: "#1e1e1e",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWgym004",
-    addedOn: "2026-06-11",
+    test: /praise|party|celebrat|dance|shout|joy|yo yo|hello/i,
+    lines: [
+      "High energy praise to get the whole room on its feet.",
+      "Joyful praise anthems made for celebration and thanksgiving.",
+    ],
   },
   {
-    id: "sunday-worship",
-    title: "Sunday Worship",
-    summary: "Uplifting Gospel to start the week with gratitude.",
-    description:
-      "Contemporary and classic Gospel that lifts the spirit. Rich harmonies, live choirs and worship anthems for quiet reflection or a full praise session at home.",
-    moods: ["Peaceful", "Happy"],
-    genres: ["Gospel", "R&B"],
-    activities: ["Cooking", "Reading"],
-    categories: ["Staff Picks"],
-    songs: 71,
-    durationMinutes: 318,
-    followers: 28300,
-    streams: 1540000,
-    plays: 2110000,
-    estimatedMonthlyStreams: 214000,
-    cover: img("photo-1438232992991-995b7058bbb3"),
-    coverColor: "#4a3016",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWworship05",
-    addedOn: "2026-04-30",
+    test: /remix|reload|version|refix|mashup/i,
+    lines: [
+      "Fresh remixes and reworks of the songs the church already loves.",
+      "Reimagined gospel favourites with a brand new bounce.",
+    ],
   },
   {
-    id: "late-night-rnb",
-    title: "Late Night R&B",
-    summary: "Smooth, slow burning R&B for after dark.",
-    description:
-      "Velvet vocals and mellow production for winding down. A mix of modern alt R&B and timeless slow jams that set the mood for a quiet evening in.",
-    moods: ["Romantic", "Chill"],
-    genres: ["R&B", "Pop"],
-    activities: ["Cooking", "Driving"],
-    categories: ["Most Popular", "Staff Picks"],
-    songs: 66,
-    durationMinutes: 258,
-    followers: 51600,
-    streams: 3410000,
-    plays: 4720000,
-    estimatedMonthlyStreams: 389000,
-    cover: img("photo-1511671782779-c97d3d27a1d4"),
-    coverColor: "#2a1e16",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWrnb006",
-    addedOn: "2026-06-19",
+    test: /old|classic|childhood|throwback|hymn|timeless/i,
+    lines: [
+      "Timeless gospel classics that shaped a generation.",
+      "Old school gospel and hymns that never grow tired.",
+    ],
   },
   {
-    id: "deep-sleep",
-    title: "Deep Sleep",
-    summary: "Soft ambient textures to drift off to.",
-    description:
-      "Gentle pads, piano and nature tones arranged to slow the mind. No sudden changes in volume so you can fall asleep and stay there through the night.",
-    moods: ["Peaceful", "Sad"],
-    genres: ["Classical", "Alternative"],
-    activities: ["Sleeping", "Reading"],
-    categories: ["Recently Added"],
-    songs: 94,
-    durationMinutes: 512,
-    followers: 39800,
-    streams: 2260000,
-    plays: 2980000,
-    estimatedMonthlyStreams: 271000,
-    cover: img("photo-1470813740244-df37b8c1edcb"),
-    coverColor: "#16233a",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWsleep07",
-    addedOn: "2026-07-05",
-  },
-  {
-    id: "road-trip-classics",
-    title: "Road Trip Classics",
-    summary: "Sing along favourites for the open highway.",
-    description:
-      "A cross genre run of feel good classics and modern hits made for long drives. Country, pop and rock anthems everyone in the car already knows the words to.",
-    moods: ["Happy", "Motivational"],
-    genres: ["Country", "Pop", "Alternative"],
-    activities: ["Driving"],
-    categories: ["Most Popular"],
-    songs: 88,
-    durationMinutes: 342,
-    followers: 34500,
-    streams: 2010000,
-    plays: 2650000,
-    estimatedMonthlyStreams: 233000,
-    cover: img("photo-1449965408869-eaa3f722e40d"),
-    coverColor: "#2e2620",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWroad08",
-    addedOn: "2026-05-27",
-  },
-  {
-    id: "jazz-cafe",
-    title: "Jazz Cafe",
-    summary: "Warm jazz standards for slow mornings.",
-    description:
-      "Brushed drums, upright bass and soft horns that fill a room without taking it over. The right backdrop for coffee, cooking or an easy afternoon with a book.",
-    moods: ["Chill", "Peaceful"],
-    genres: ["Jazz", "Classical"],
-    activities: ["Cooking", "Reading", "Studying"],
-    categories: ["Staff Picks"],
-    songs: 76,
-    durationMinutes: 289,
-    followers: 22700,
-    streams: 1180000,
-    plays: 1620000,
-    estimatedMonthlyStreams: 156000,
-    cover: img("photo-1415201364774-f6f0bb35f28f"),
-    coverColor: "#3a2413",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWjazz09",
-    addedOn: "2026-04-18",
-  },
-  {
-    id: "party-starter",
-    title: "Party Starter",
-    summary: "Dancehall and pop bangers to fill the floor.",
-    description:
-      "Big, bright and loud. A running mix of Dancehall, Afrobeats and pop hits sequenced to keep the energy climbing from the first record to the last.",
-    moods: ["Happy", "Motivational"],
-    genres: ["Dancehall", "Pop", "Afrobeats"],
-    activities: ["Party", "Workout"],
-    categories: ["Trending", "Recently Added"],
-    songs: 70,
-    durationMinutes: 244,
-    followers: 45300,
-    streams: 2990000,
-    plays: 4150000,
-    estimatedMonthlyStreams: 471000,
-    cover: img("photo-1499415479124-43c32433a620"),
-    coverColor: "#3a1220",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWparty10",
-    addedOn: "2026-07-08",
-  },
-  {
-    id: "gaming-arena",
-    title: "Gaming Arena",
-    summary: "Driving beats to keep you in the zone.",
-    description:
-      "Energetic electronic and Hip-Hop instrumentals for long gaming sessions. Enough drive to keep the adrenaline going without pulling focus from the screen.",
-    moods: ["Motivational", "Happy"],
-    genres: ["Hip-Hop", "Alternative"],
-    activities: ["Gaming", "Workout"],
-    categories: ["Recently Added", "Trending"],
-    songs: 63,
-    durationMinutes: 226,
-    followers: 26100,
-    streams: 1370000,
-    plays: 1880000,
-    estimatedMonthlyStreams: 198000,
-    cover: img("photo-1542751371-adc38448a05e"),
-    coverColor: "#17233a",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWgame11",
-    addedOn: "2026-07-01",
-  },
-  {
-    id: "heartbreak-hotel",
-    title: "Heartbreak Hotel",
-    summary: "Slow, honest songs for the tough days.",
-    description:
-      "A tender collection of ballads and stripped back records for when you need to sit with your feelings. Soft R&B, pop and acoustic cuts about love and loss.",
-    moods: ["Sad", "Romantic"],
-    genres: ["R&B", "Pop", "Alternative"],
-    activities: ["Reading", "Driving"],
-    categories: ["Staff Picks"],
-    songs: 54,
-    durationMinutes: 197,
-    followers: 30900,
-    streams: 1760000,
-    plays: 2340000,
-    estimatedMonthlyStreams: 205000,
-    cover: img("photo-1520340356584-f9917d1eea6f"),
-    coverColor: "#1c1c22",
-    spotifyUrl: "https://open.spotify.com/playlist/37i9dQZF1DWheart12",
-    addedOn: "2026-06-04",
+    test: /top \d+|best of|trending|hits|202\d|chart/i,
+    lines: [
+      "The biggest gospel songs of the moment, refreshed as they climb.",
+      "Trending gospel hits everyone has on repeat right now.",
+    ],
   },
 ];
 
-export function getPlaylistById(id: string): Playlist | undefined {
-  return playlists.find((p) => p.id === id);
+const AFRO_LINES = [
+  "Gospel meets Afrobeat, made to move your feet and lift your spirit.",
+  "Spirit filled Afro-gospel with rolling drums and big choruses.",
+];
+
+const DEFAULT_LINES = [
+  "A handpicked gospel selection to soundtrack your day.",
+  "Curated gospel songs for worship, work and everything in between.",
+  "Gospel sounds gathered with care, updated as they grow.",
+];
+
+function pick(lines: string[], seed: number): string {
+  return lines[seed % lines.length];
 }
 
-export function getFeaturedPlaylist(): Playlist {
-  return playlists.find((p) => p.featured) ?? playlists[0];
+function generateBlurb(title: string, genres: string[]): string {
+  const seed = hashString(title);
+  for (const bucket of BLURB_BUCKETS) {
+    if (bucket.test.test(title)) return pick(bucket.lines, seed);
+  }
+  if (genres.includes("Afrobeat") || genres.includes("Afro-gospel")) {
+    return pick(AFRO_LINES, seed);
+  }
+  return pick(DEFAULT_LINES, seed);
 }
 
-export function getByCategory(category: string): Playlist[] {
-  return playlists.filter((p) => p.categories.includes(category as never));
+// Merge raw Spotify data with the owner override layer into display playlists.
+export function mergePlaylists(raw: PlaylistRaw[]): Playlist[] {
+  return raw
+    .filter((r) => !overrides[r.id]?.hidden)
+    .map((r): Playlist => {
+      const o = overrides[r.id] ?? {};
+      const title = o.displayTitle ?? r.title;
+      const genres = o.genres ?? ["Gospel"];
+      return {
+        id: r.id,
+        title,
+        spotifyUrl: r.spotifyUrl,
+        cover: o.cover ?? r.cover,
+        coverColor: o.coverColor ?? DEFAULT_COVER_COLOR,
+        saves: r.saves,
+        songs: o.songs ?? r.songs,
+        durationMinutes: o.durationMinutes ?? r.durationMinutes,
+        artists: o.artists ?? r.artists,
+        genres,
+        blurb: o.blurb ?? generateBlurb(title, genres),
+        featured: o.featured ?? false,
+      };
+    })
+    .sort((a, b) => b.saves - a.saves);
+}
+
+// The committed snapshot, merged and sorted by saves. Used as the immediate
+// render and as the fallback if the live function is unavailable.
+export const snapshotPlaylists: Playlist[] = mergePlaylists(
+  snapshot as PlaylistRaw[]
+);
+
+// ---- Pure helpers operating on a supplied playlist list ------------------
+
+export const sortBySaves = (list: Playlist[]): Playlist[] =>
+  [...list].sort((a, b) => b.saves - a.saves);
+
+export const topBySaves = (list: Playlist[], n: number): Playlist[] =>
+  sortBySaves(list).slice(0, n);
+
+export const bottomBySaves = (list: Playlist[], n: number): Playlist[] =>
+  [...list].sort((a, b) => a.saves - b.saves).slice(0, n);
+
+export const getFeatured = (list: Playlist[]): Playlist | undefined =>
+  list.find((p) => p.featured) ?? sortBySaves(list)[0];
+
+export const getById = (
+  list: Playlist[],
+  id: string
+): Playlist | undefined => list.find((p) => p.id === id);
+
+// Trending and Most Popular show the highest saves; Recently Added shows the
+// lowest saves (a proxy for the newest additions).
+export function byCategory(list: Playlist[], category: Category): Playlist[] {
+  if (category === "Recently Added") {
+    return [...list].sort((a, b) => a.saves - b.saves);
+  }
+  return sortBySaves(list);
 }

@@ -1,9 +1,10 @@
 import { Link, useParams } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { PlaylistCard } from "../components/PlaylistCard";
-import { playlists, getPlaylistById } from "../data/playlists";
+import { usePlaylists } from "../context/PlaylistsProvider";
+import { getById } from "../data/playlists";
 import { site } from "../data/site";
-import { formatCompact, formatDuration, formatDate } from "../utils/format";
+import { formatCompact, formatDuration } from "../utils/format";
 import NotFound from "./NotFound";
 
 const socialIcon: Record<string, IconName> = {
@@ -16,32 +17,32 @@ const socialIcon: Record<string, IconName> = {
 
 export default function PlaylistDetail() {
   const { id } = useParams<{ id: string }>();
-  const playlist = id ? getPlaylistById(id) : undefined;
+  const { playlists } = usePlaylists();
+  const playlist = id ? getById(playlists, id) : undefined;
 
   if (!playlist) {
     return <NotFound />;
   }
 
   const stats: { icon: IconName; value: string; label: string }[] = [
-    { icon: "play", value: formatCompact(playlist.plays), label: "Total plays" },
-    { icon: "chart", value: formatCompact(playlist.streams), label: "Streams" },
-    {
-      icon: "trending",
-      value: formatCompact(playlist.estimatedMonthlyStreams),
-      label: "Est. monthly",
-    },
-    { icon: "list", value: String(playlist.songs), label: "Songs" },
-    {
-      icon: "users",
-      value: formatCompact(playlist.followers),
-      label: "Followers",
-    },
-    {
+    { icon: "heart", value: formatCompact(playlist.saves), label: "Saves" },
+  ];
+  if (playlist.songs > 0) {
+    stats.push({ icon: "list", value: String(playlist.songs), label: "Songs" });
+  }
+  if (playlist.durationMinutes > 0) {
+    stats.push({
       icon: "clock",
       value: formatDuration(playlist.durationMinutes),
-      label: "Run time",
-    },
-  ];
+      label: "Total time",
+    });
+  }
+  if (stats.length < 3) {
+    stats.push({ icon: "music", value: playlist.genres[0], label: "Genre" });
+  }
+  if (stats.length < 3) {
+    stats.push({ icon: "check-circle", value: "3 to 20", label: "Open spots" });
+  }
 
   const related = playlists
     .filter(
@@ -60,32 +61,36 @@ export default function PlaylistDetail() {
         </Link>
 
         <div className="detail-hero reveal">
-          <div className="detail-cover">
-            <img src={playlist.cover} alt={playlist.title} />
+          <div
+            className="detail-cover"
+            style={{ backgroundColor: playlist.coverColor }}
+          >
+            <span className="cover-fallback" aria-hidden="true">
+              <Icon name="music" />
+            </span>
+            {playlist.cover ? (
+              <img
+                src={playlist.cover}
+                alt={playlist.title}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : null}
             <span className="dc-tag">{playlist.genres[0]}</span>
           </div>
 
           <div className="detail-head">
             <span className="eyebrow accent">
-              {playlist.categories.join("  /  ")}
+              {playlist.genres.join("  /  ")}
             </span>
             <h1 className="display">{playlist.title}</h1>
-            <p className="detail-lede">{playlist.summary}</p>
+            <p className="detail-lede">{playlist.blurb}</p>
 
             <div className="tag-row">
               {playlist.genres.map((g) => (
                 <span key={g} className="tag accent">
                   {g}
-                </span>
-              ))}
-              {playlist.moods.map((m) => (
-                <span key={m} className="tag">
-                  {m}
-                </span>
-              ))}
-              {playlist.activities.map((a) => (
-                <span key={a} className="tag">
-                  {a}
                 </span>
               ))}
             </div>
@@ -121,24 +126,30 @@ export default function PlaylistDetail() {
 
         <section className="detail-section">
           <h2>About this playlist</h2>
-          <p className="detail-desc">{playlist.description}</p>
-          <p className="detail-note">
-            Added to the hub on {formatDate(playlist.addedOn)}.
+          <p className="detail-desc">
+            {playlist.blurb} A {playlist.genres.join(" and ")} playlist saved by{" "}
+            {formatCompact(playlist.saves)} listeners on Spotify. Tap Open in
+            Spotify to hear the full set and follow along.
           </p>
+          {playlist.artists.length > 0 ? (
+            <p className="detail-note">
+              Featuring {playlist.artists.join(", ")}.
+            </p>
+          ) : null}
         </section>
 
         <section className="detail-section">
           <div className="contact-panel">
             <div>
-              <h3>Want your track on this playlist?</h3>
+              <h3>Want your song on this playlist?</h3>
               <p>
-                Submissions and collaborations are always open. Reach out or
-                follow along on social media.
+                Claim an open spot. Submissions are read individually and placed
+                when the sound fits.
               </p>
             </div>
             <div className="cp-actions">
               <Link to="/submit" className="btn btn-primary">
-                Submit your track
+                Submit your song
                 <Icon name="chevron-right" />
               </Link>
               <div className="socials">

@@ -1,22 +1,25 @@
 import { Link } from "react-router-dom";
 import { Icon } from "./Icon";
 import { site } from "../data/site";
-import { playlists, getFeaturedPlaylist } from "../data/playlists";
+import { usePlaylists } from "../context/PlaylistsProvider";
+import { getFeatured } from "../data/playlists";
 import { formatCompact } from "../utils/format";
 
-const totalStreams = playlists.reduce((sum, p) => sum + p.streams, 0);
-const totalFollowers = playlists.reduce((sum, p) => sum + p.followers, 0);
-
 export function Hero() {
-  const featured = getFeaturedPlaylist();
+  const { playlists } = usePlaylists();
+  const featured = getFeatured(playlists);
+  const totalSaves = playlists.reduce((sum, p) => sum + p.saves, 0);
+  const totalSongs = playlists.reduce((sum, p) => sum + p.songs, 0);
+  const maxSaves = playlists.reduce((m, p) => Math.max(m, p.saves), 0);
 
   return (
     <section className="hero">
       <div className="container hero-grid">
         <div className="hero-copy reveal" style={{ animationDelay: "0.05s" }}>
-          <span className="eyebrow accent">Curated Spotify playlists</span>
+          <span className="eyebrow accent">Editorial and curated Spotify playlists</span>
           <h1 className="display">
-            {site.heroHeadingLead} <span className="muted">{site.heroHeadingRest}</span>
+            {site.heroHeadingLead}{" "}
+            <span className="muted">{site.heroHeadingRest}</span>
           </h1>
           <p className="hero-sub">{site.heroSubheading}</p>
 
@@ -25,8 +28,8 @@ export function Hero() {
               <Icon name="headphones" />
               Browse playlists
             </Link>
-            <Link to="/categories" className="btn btn-outline btn-lg">
-              View categories
+            <Link to="/submit" className="btn btn-outline btn-lg">
+              Submit your song
             </Link>
           </div>
 
@@ -36,34 +39,43 @@ export function Hero() {
               <div className="hlabel">Playlists</div>
             </div>
             <div className="hstat">
-              <div className="hnum num">{formatCompact(totalStreams)}</div>
-              <div className="hlabel">Total streams</div>
+              <div className="hnum num">{formatCompact(totalSaves)}</div>
+              <div className="hlabel">Total saves</div>
             </div>
-            <div className="hstat">
-              <div className="hnum num">{formatCompact(totalFollowers)}</div>
-              <div className="hlabel">Followers</div>
-            </div>
+            {totalSongs > 0 ? (
+              <div className="hstat">
+                <div className="hnum num">{formatCompact(totalSongs)}</div>
+                <div className="hlabel">Total songs</div>
+              </div>
+            ) : (
+              <div className="hstat">
+                <div className="hnum num">{formatCompact(maxSaves)}</div>
+                <div className="hlabel">Top playlist</div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="hero-visual reveal" style={{ animationDelay: "0.18s" }}>
-          <div className="hero-float">
-            <div className="hf-num num">{formatCompact(featured.followers)}</div>
-            <div className="hf-label">Followers</div>
-          </div>
-          <Link to={`/playlist/${featured.id}`} className="hero-cover">
-            <img src={featured.cover} alt={featured.title} />
-            <div className="hero-cover-over" />
-            <div className="hero-cover-body">
-              <span className="hero-tag">Featured</span>
-              <h3>{featured.title}</h3>
-              <div className="hero-cover-meta num">
-                {featured.genres[0]} &middot; {featured.songs} songs &middot;{" "}
-                {formatCompact(featured.streams)} streams
-              </div>
+        {featured ? (
+          <div className="hero-visual reveal" style={{ animationDelay: "0.18s" }}>
+            <div className="hero-float">
+              <div className="hf-num num">{formatCompact(featured.saves)}</div>
+              <div className="hf-label">Saves</div>
             </div>
-          </Link>
-        </div>
+            <Link to={`/playlist/${featured.id}`} className="hero-cover">
+              <img src={featured.cover} alt={featured.title} />
+              <div className="hero-cover-over" />
+              <div className="hero-cover-body">
+                <span className="hero-tag">Featured</span>
+                <h3>{featured.title}</h3>
+                <div className="hero-cover-meta num">
+                  {featured.genres[0]} &middot; {formatCompact(featured.saves)}{" "}
+                  saves
+                </div>
+              </div>
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );

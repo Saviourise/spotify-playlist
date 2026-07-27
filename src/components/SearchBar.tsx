@@ -13,7 +13,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search playlists, moods or genres. Try Chill, Afrobeats or Workout"
+        placeholder="Search playlists, artists or genres. Try Gospel, Afro-gospel or Worship"
         aria-label="Search playlists"
       />
       {value ? (

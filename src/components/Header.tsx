@@ -33,7 +33,7 @@ export function Header() {
         <div className="container header-inner">
           <Link to="/" className="brand" aria-label={`${site.name} home`}>
             <span className="brand-mark">
-              <Icon name="logo" />
+              <img src="/eseosa-icon.jpg" alt="" />
             </span>
             {site.name}
           </Link>

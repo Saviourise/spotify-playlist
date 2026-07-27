@@ -35,6 +35,12 @@ export function formatDuration(minutes: number): string {
   return hours + " hr " + mins + " min";
 }
 
+/** Minutes to whole hours, for example 7680 becomes "128 hrs". */
+export function formatHours(minutes: number): string {
+  const hours = Math.round(minutes / 60);
+  return `${hours.toLocaleString("en-US")} ${hours === 1 ? "hr" : "hrs"}`;
+}
+
 /** ISO date to a friendly label, for example "28 Jun 2026". */
 export function formatDate(iso: string): string {
   const date = new Date(iso + "T00:00:00");
