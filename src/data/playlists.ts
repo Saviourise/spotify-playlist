@@ -143,8 +143,13 @@ export const sortBySaves = (list: Playlist[]): Playlist[] =>
 export const topBySaves = (list: Playlist[], n: number): Playlist[] =>
   sortBySaves(list).slice(0, n);
 
+// "Recently Added" uses the fewest saves as a proxy for newest, but never shows
+// playlists with zero saves.
 export const bottomBySaves = (list: Playlist[], n: number): Playlist[] =>
-  [...list].sort((a, b) => a.saves - b.saves).slice(0, n);
+  list
+    .filter((p) => p.saves > 0)
+    .sort((a, b) => a.saves - b.saves)
+    .slice(0, n);
 
 export const getFeatured = (list: Playlist[]): Playlist | undefined =>
   list.find((p) => p.featured) ?? sortBySaves(list)[0];
@@ -155,10 +160,12 @@ export const getById = (
 ): Playlist | undefined => list.find((p) => p.id === id);
 
 // Trending and Most Popular show the highest saves; Recently Added shows the
-// lowest saves (a proxy for the newest additions).
+// lowest saves (a proxy for the newest additions), excluding zero-save ones.
 export function byCategory(list: Playlist[], category: Category): Playlist[] {
   if (category === "Recently Added") {
-    return [...list].sort((a, b) => a.saves - b.saves);
+    return list
+      .filter((p) => p.saves > 0)
+      .sort((a, b) => a.saves - b.saves);
   }
   return sortBySaves(list);
 }
