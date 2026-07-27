@@ -39,9 +39,25 @@ export default function About() {
             <span className="eyebrow accent">About {site.name}</span>
             <h1 className="display">Curating the sound of gospel</h1>
             <p>
-              {site.name} is a curated home for gospel playlists on Spotify,
-              sorted by genre. Instead of digging through endless search
-              results, you pick a vibe and press play.
+              {site.name} is a passionate playlist curator, dedicated to
+              helping music lovers discover the perfect soundtrack for every
+              mood, moment and lifestyle. With Jesus as the focus.
+            </p>
+            <p>
+              Driven by a keen ear for quality music and an understanding of
+              listener preferences, {site.name} curates playlists that balance
+              popular hits, hidden gems and emerging artists. Every playlist is
+              thoughtfully arranged to deliver a seamless listening journey,
+              whether the goal is worship, praise, studying, or simply
+              discovering new music.
+            </p>
+            <p>
+              Beyond curation, {site.name} is committed to supporting both
+              established and independent artists by connecting their music with
+              the right audiences. Through consistency, attention to detail and
+              a genuine passion for music discovery, the brand has become a
+              trusted destination for listeners seeking playlists that match
+              their taste and introduce them to fresh sounds.
             </p>
             <p>
               It is also a home for artists. Find the playlist your song belongs
