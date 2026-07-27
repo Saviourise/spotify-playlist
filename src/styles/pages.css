@@ -685,6 +685,124 @@ select.input {
   color: var(--text-3);
 }
 
+/* Multi playlist "pick your playlists" rows */
+.fs-hint {
+  color: var(--text-2);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: -8px 0 20px;
+  max-width: 62ch;
+}
+
+.targets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.target-row {
+  display: grid;
+  grid-template-columns: 1fr 132px 46px;
+  gap: 12px;
+  align-items: center;
+}
+
+.target-row .field {
+  gap: 0;
+}
+
+.target-remove {
+  width: 46px;
+  height: 50px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  color: var(--text-3);
+  display: grid;
+  place-items: center;
+  transition: color 0.16s var(--ease), border-color 0.16s var(--ease);
+}
+
+.target-remove svg {
+  width: 18px;
+  height: 18px;
+}
+
+.target-remove:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.target-remove-spacer {
+  width: 46px;
+}
+
+.targets.invalid .input {
+  border-color: var(--danger);
+}
+
+.add-target {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--pill);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: color 0.16s var(--ease), border-color 0.16s var(--ease),
+    background-color 0.16s var(--ease);
+}
+
+.add-target svg {
+  width: 16px;
+  height: 16px;
+}
+
+.add-target:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background-color: var(--surface-2);
+}
+
+.add-target:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ss-recap .ss-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ss-recap .ss-list li {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+@media (max-width: 560px) {
+  .target-row {
+    grid-template-columns: 1fr 46px;
+    grid-template-areas: "pl rm" "sp sp";
+    gap: 8px;
+  }
+  .target-row .t-playlist {
+    grid-area: pl;
+  }
+  .target-row .t-spot {
+    grid-area: sp;
+  }
+  .target-row .target-remove,
+  .target-row .target-remove-spacer {
+    grid-area: rm;
+  }
+}
+
 /* Submit sidebar */
 .submit-aside {
   position: sticky;

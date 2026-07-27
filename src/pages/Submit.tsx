@@ -8,6 +8,11 @@ import { GENRES } from "../data/types";
 // Open spots artists can request. Spots 1 and 2 are reserved.
 const SPOTS = Array.from({ length: 18 }, (_, i) => i + 3); // 3..20
 
+interface Target {
+  playlist: string;
+  spot: string;
+}
+
 interface FormState {
   artist: string;
   email: string;
@@ -15,8 +20,7 @@ interface FormState {
   spotifyUrl: string;
   trackTitle: string;
   genre: string;
-  playlist: string;
-  spot: string;
+  targets: Target[];
   consent: boolean;
 }
 
@@ -27,8 +31,7 @@ const initialForm: FormState = {
   spotifyUrl: "",
   trackTitle: "",
   genre: "",
-  playlist: "",
-  spot: "",
+  targets: [{ playlist: "", spot: "" }],
   consent: false,
 };
 
@@ -41,8 +44,8 @@ const isPhone = (v: string) => v.replace(/\D/g, "").length >= 7;
 
 const guidelines = [
   "Paste a direct Spotify link to the track you want placed.",
-  "Pick the gospel playlist your song actually fits.",
-  "Choose an open spot from 3 to 20 in that playlist.",
+  "Pick the gospel playlists your song actually fits.",
+  "Add as many playlists as you like, with an open spot (3 to 20) for each.",
   "We read every submission and place tracks when the sound fits.",
 ];
 
@@ -50,13 +53,16 @@ export default function Submit() {
   const { playlists } = usePlaylists();
   const [searchParams] = useSearchParams();
 
-  // Preselect the target playlist when arriving from a playlist's page.
+  // Preselect the first playlist when arriving from a playlist's page.
   const [form, setForm] = useState<FormState>(() => {
     const requested = searchParams.get("playlist") ?? "";
     const preselected = playlists.some((p) => p.title === requested)
       ? requested
       : "";
-    return { ...initialForm, playlist: preselected };
+    return {
+      ...initialForm,
+      targets: [{ playlist: preselected, spot: "" }],
+    };
   });
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success">(
@@ -69,6 +75,33 @@ export default function Submit() {
       setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
   }
+
+  function updateTarget(index: number, key: keyof Target, value: string) {
+    setForm((prev) => ({
+      ...prev,
+      targets: prev.targets.map((t, i) =>
+        i === index ? { ...t, [key]: value } : t
+      ),
+    }));
+    if (errors.targets) setErrors((prev) => ({ ...prev, targets: undefined }));
+  }
+
+  function addTarget() {
+    setForm((prev) => ({
+      ...prev,
+      targets: [...prev.targets, { playlist: "", spot: "" }],
+    }));
+  }
+
+  function removeTarget(index: number) {
+    setForm((prev) => ({
+      ...prev,
+      targets: prev.targets.filter((_, i) => i !== index),
+    }));
+    if (errors.targets) setErrors((prev) => ({ ...prev, targets: undefined }));
+  }
+
+  const completeTargets = form.targets.filter((t) => t.playlist && t.spot);
 
   function validate(): Errors {
     const next: Errors = {};
@@ -84,8 +117,20 @@ export default function Submit() {
     if (!form.trackTitle.trim())
       next.trackTitle = "Please enter the track title.";
     if (!form.genre) next.genre = "Please pick a genre.";
-    if (!form.playlist) next.playlist = "Please pick a playlist.";
-    if (!form.spot) next.spot = "Please pick a spot.";
+
+    const partial = form.targets.some(
+      (t) => (t.playlist && !t.spot) || (!t.playlist && t.spot)
+    );
+    const titles = completeTargets.map((t) => t.playlist);
+    const hasDuplicate = new Set(titles).size !== titles.length;
+    if (completeTargets.length === 0)
+      next.targets = "Choose at least one playlist and an open spot for it.";
+    else if (partial)
+      next.targets =
+        "Each playlist needs a spot, and each spot needs a playlist.";
+    else if (hasDuplicate)
+      next.targets = "You picked the same playlist more than once.";
+
     if (!form.consent)
       next.consent = "Please confirm you have the rights to this track.";
     return next;
@@ -97,12 +142,15 @@ export default function Submit() {
     setErrors(found);
     if (Object.keys(found).length > 0) {
       const first = document.querySelector<HTMLElement>(
-        ".field.invalid input, .field.invalid select, .consent.invalid input"
+        ".field.invalid input, .field.invalid select, .targets.invalid select, .consent.invalid input"
       );
       first?.focus();
       return;
     }
     setStatus("submitting");
+    const placements = completeTargets
+      .map((t) => `Spot ${t.spot} on ${t.playlist}`)
+      .join("; ");
     // Netlify Forms captures this on the deployed site and emails a notification.
     const body = new URLSearchParams({
       "form-name": "track-submission",
@@ -112,8 +160,7 @@ export default function Submit() {
       trackTitle: form.trackTitle,
       spotifyUrl: form.spotifyUrl,
       genre: form.genre,
-      playlist: form.playlist,
-      spot: form.spot,
+      placements,
     }).toString();
     fetch("/", {
       method: "POST",
@@ -146,11 +193,16 @@ export default function Submit() {
               by email.
             </p>
             <div className="ss-recap">
-              <div className="ssr-label">Requested placement</div>
-              <div className="ssr-value">
-                {form.trackTitle.trim()} &middot; spot {form.spot} on{" "}
-                {form.playlist}
+              <div className="ssr-label">
+                Requested placements for {form.trackTitle.trim()}
               </div>
+              <ul className="ss-list">
+                {completeTargets.map((t, i) => (
+                  <li key={i}>
+                    Spot {t.spot} on {t.playlist}
+                  </li>
+                ))}
+              </ul>
             </div>
             <div className="ss-actions">
               <button className="btn btn-primary" onClick={resetForm}>
@@ -166,6 +218,10 @@ export default function Submit() {
     );
   }
 
+  const usedTitles = new Set(
+    form.targets.map((t) => t.playlist).filter(Boolean)
+  );
+
   return (
     <>
       <div className="page-head">
@@ -173,8 +229,9 @@ export default function Submit() {
           <span className="eyebrow accent">Submit a song</span>
           <h1 className="display">Get your song on a playlist</h1>
           <p>
-            Pick the gospel playlist that fits your sound and claim an open spot.
-            Submissions are free, we read every one, and we reply if it is a fit.
+            Pick the gospel playlists that fit your sound and claim an open spot
+            on each. Submissions are free, we read every one, and we reply if it
+            is a fit.
           </p>
         </div>
       </div>
@@ -313,61 +370,94 @@ export default function Submit() {
               </div>
             </div>
 
-            {/* Pick your spot */}
+            {/* Pick your playlists */}
             <div className="form-section">
               <div className="fs-head">
                 <span className="fs-ix num">03</span>
-                <h2 className="fs-title">Pick your spot</h2>
+                <h2 className="fs-title">Pick your playlists</h2>
               </div>
-              <div className="form-grid">
-                <div className={`field ${errors.playlist ? "invalid" : ""}`}>
-                  <label className="field-label" htmlFor="playlist">
-                    Target playlist <span className="req">*</span>
-                  </label>
-                  <select
-                    id="playlist"
-                    className="input"
-                    value={form.playlist}
-                    onChange={(e) => update("playlist", e.target.value)}
-                  >
-                    <option value="">Choose a playlist</option>
-                    {playlists.map((p) => (
-                      <option key={p.id} value={p.title}>
-                        {p.title}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.playlist ? (
-                    <span className="field-error">{errors.playlist}</span>
-                  ) : null}
-                </div>
+              <p className="fs-hint">
+                Choose the playlists you want your song on, and an open spot (3
+                to 20) for each. Add as many as you like. Spots 1 and 2 are
+                reserved.
+              </p>
 
-                <div className={`field ${errors.spot ? "invalid" : ""}`}>
-                  <label className="field-label" htmlFor="spot">
-                    Spot (3 to 20) <span className="req">*</span>
-                  </label>
-                  <select
-                    id="spot"
-                    className="input"
-                    value={form.spot}
-                    onChange={(e) => update("spot", e.target.value)}
-                  >
-                    <option value="">Pick an open spot</option>
-                    {SPOTS.map((n) => (
-                      <option key={n} value={String(n)}>
-                        Spot {n}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.spot ? (
-                    <span className="field-error">{errors.spot}</span>
-                  ) : (
-                    <span className="field-hint">
-                      Spots 1 and 2 are reserved.
-                    </span>
-                  )}
-                </div>
+              <div className={`targets ${errors.targets ? "invalid" : ""}`}>
+                {form.targets.map((t, i) => {
+                  const options = playlists.filter(
+                    (p) => p.title === t.playlist || !usedTitles.has(p.title)
+                  );
+                  return (
+                    <div className="target-row" key={i}>
+                      <div className="field t-playlist">
+                        <select
+                          className="input"
+                          aria-label={`Playlist ${i + 1}`}
+                          value={t.playlist}
+                          onChange={(e) =>
+                            updateTarget(i, "playlist", e.target.value)
+                          }
+                        >
+                          <option value="">Choose a playlist</option>
+                          {options.map((p) => (
+                            <option key={p.id} value={p.title}>
+                              {p.title}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="field t-spot">
+                        <select
+                          className="input"
+                          aria-label={`Spot for playlist ${i + 1}`}
+                          value={t.spot}
+                          onChange={(e) =>
+                            updateTarget(i, "spot", e.target.value)
+                          }
+                        >
+                          <option value="">Spot</option>
+                          {SPOTS.map((n) => (
+                            <option key={n} value={String(n)}>
+                              Spot {n}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {form.targets.length > 1 ? (
+                        <button
+                          type="button"
+                          className="target-remove"
+                          aria-label="Remove this playlist"
+                          onClick={() => removeTarget(i)}
+                        >
+                          <Icon name="close" />
+                        </button>
+                      ) : (
+                        <span className="target-remove-spacer" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+
+              {errors.targets ? (
+                <span
+                  className="field-error"
+                  style={{ marginTop: 10, display: "block" }}
+                >
+                  {errors.targets}
+                </span>
+              ) : null}
+
+              <button
+                type="button"
+                className="add-target"
+                onClick={addTarget}
+                disabled={form.targets.length >= playlists.length}
+              >
+                <Icon name="plus" />
+                Add another playlist
+              </button>
             </div>
 
             {/* Consent + submit */}
