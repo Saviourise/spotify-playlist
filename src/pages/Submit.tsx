@@ -11,6 +11,7 @@ const SPOTS = Array.from({ length: 18 }, (_, i) => i + 3); // 3..20
 interface FormState {
   artist: string;
   email: string;
+  phone: string;
   spotifyUrl: string;
   trackTitle: string;
   genre: string;
@@ -22,6 +23,7 @@ interface FormState {
 const initialForm: FormState = {
   artist: "",
   email: "",
+  phone: "",
   spotifyUrl: "",
   trackTitle: "",
   genre: "",
@@ -35,6 +37,7 @@ type Errors = Partial<Record<keyof FormState, string>>;
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const isSpotifyLink = (v: string) =>
   /open\.spotify\.com|spotify:/i.test(v.trim());
+const isPhone = (v: string) => v.replace(/\D/g, "").length >= 7;
 
 const guidelines = [
   "Paste a direct Spotify link to the track you want placed.",
@@ -63,6 +66,8 @@ export default function Submit() {
     if (!form.artist.trim()) next.artist = "Please enter your artist name.";
     if (!form.email.trim()) next.email = "Please enter your email.";
     else if (!isEmail(form.email)) next.email = "Enter a valid email address.";
+    if (!form.phone.trim()) next.phone = "Please enter your phone number.";
+    else if (!isPhone(form.phone)) next.phone = "Enter a valid phone number.";
     if (!form.spotifyUrl.trim())
       next.spotifyUrl = "Please paste your Spotify track link.";
     else if (!isSpotifyLink(form.spotifyUrl))
@@ -94,6 +99,7 @@ export default function Submit() {
       "form-name": "track-submission",
       artist: form.artist,
       email: form.email,
+      phone: form.phone,
       trackTitle: form.trackTitle,
       spotifyUrl: form.spotifyUrl,
       genre: form.genre,
@@ -204,6 +210,23 @@ export default function Submit() {
                   />
                   {errors.email ? (
                     <span className="field-error">{errors.email}</span>
+                  ) : null}
+                </div>
+
+                <div className={`field full ${errors.phone ? "invalid" : ""}`}>
+                  <label className="field-label" htmlFor="phone">
+                    Phone number <span className="req">*</span>
+                  </label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    className="input"
+                    value={form.phone}
+                    onChange={(e) => update("phone", e.target.value)}
+                    placeholder="+234 800 000 0000"
+                  />
+                  {errors.phone ? (
+                    <span className="field-error">{errors.phone}</span>
                   ) : null}
                 </div>
               </div>
