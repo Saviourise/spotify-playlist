@@ -64,7 +64,10 @@ export async function fetchPlaylists({
     items.push(...(page.items || []));
     url = page.next;
   }
-  const owned = items.filter((p) => p && p.owner && p.owner.id === userId);
+  // Only the user's own PUBLIC playlists (exclude private/secret ones).
+  const owned = items.filter(
+    (p) => p && p.owner && p.owner.id === userId && p.public === true
+  );
 
   // 2. Title, cover, link and description come straight from the list response.
   //    Only the save count needs a per playlist call, so we run those in
