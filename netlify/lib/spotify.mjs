@@ -67,12 +67,12 @@ export async function fetchPlaylists({
   const owned = items.filter((p) => p && p.owner && p.owner.id === userId);
 
   // 2. Title, cover, link and description come straight from the list response.
-  //    Only the save count needs a per playlist call. Track data (song count,
-  //    durations, artist list) is not available to this app, so those are left
-  //    empty and can be filled in manually via overrides if ever needed.
-  const out = [];
+  //    Only the save count needs a per playlist call, so we run those in
+  //    parallel batches to stay well inside the function time limit. Track data
+  //    (song count, durations, artists) is not available to this app.
   let saveFails = 0;
-  for (const p of owned) {
+
+  async function withSaves(p) {
     let saves = 0;
     try {
       const detail = await spotifyGet(
@@ -83,8 +83,7 @@ export async function fetchPlaylists({
     } catch {
       saveFails++;
     }
-
-    out.push({
+    return {
       id: p.id,
       title: p.name,
       spotifyUrl:
@@ -96,7 +95,15 @@ export async function fetchPlaylists({
       songs: 0,
       durationMinutes: 0,
       artists: [],
-    });
+    };
+  }
+
+  const out = [];
+  const BATCH = 12;
+  for (let i = 0; i < owned.length; i += BATCH) {
+    const batch = owned.slice(i, i + BATCH);
+    const results = await Promise.all(batch.map(withSaves));
+    out.push(...results);
   }
 
   if (saveFails) {
